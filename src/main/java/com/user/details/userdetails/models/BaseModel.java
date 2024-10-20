@@ -15,4 +15,5 @@ public class BaseModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
+    private boolean inactive;
 }

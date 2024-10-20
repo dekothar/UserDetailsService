@@ -22,6 +22,7 @@ public class UserDto {
      * @param user * @return
      */
     public static UserDto convertFromUserToUserDto(User user) {
+        if (user == null) return null;
         UserDto userDto = new UserDto();
         userDto.setName(user.getName());
         userDto.setEmail(user.getEmail());

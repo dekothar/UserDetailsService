@@ -2,6 +2,7 @@ package com.user.details.userdetails.controllers;
 
 import com.user.details.userdetails.dtos.*;
 import com.user.details.userdetails.enums.ResponseStatusEnum;
+import com.user.details.userdetails.exceptions.InvalidTokenException;
 import com.user.details.userdetails.models.Tokens;
 import com.user.details.userdetails.models.User;
 import com.user.details.userdetails.services.UserService;
@@ -50,12 +51,25 @@ public class UserController {
     // 3. logout functionality
     @PatchMapping("/logout")
     public void logout(@RequestBody LogOutReqDto logoutreqdto) {
-        return;
+        try {
+            userService.logOut(logoutreqdto.getToken());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // 4. validate functionality
     @GetMapping("/validate")
     public UserDto validate(@RequestBody String token) {
-        return null;
+        UserDto userDto = null;
+        try {
+            User user = userService.ValidateToken(token);
+            userDto = UserDto.convertFromUserToUserDto(user);
+            userDto.setResponseStatus(ResponseStatusEnum.SUCCESS);
+        } catch (Exception e) {
+            userDto = new UserDto();
+            userDto.setResponseStatus(ResponseStatusEnum.FAILURE);
+        }
+        return userDto;
     }
 }
