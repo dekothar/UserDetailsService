@@ -2,7 +2,6 @@ package com.user.details.userdetails.services;
 
 import com.user.details.userdetails.exceptions.InvalidTokenException;
 import com.user.details.userdetails.exceptions.PasswordNotMatchingException;
-import com.user.details.userdetails.exceptions.TokenGenerationException;
 import com.user.details.userdetails.exceptions.UserNotFoundException;
 import com.user.details.userdetails.models.Tokens;
 import com.user.details.userdetails.models.User;
@@ -19,6 +18,11 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    private static final String PASSWORD_NOT_MATCHING_EXCEPTION = "Password not matching with the system stored password";
+    private static final String INVALID_TOKEN_EXCEPTION = "Token doesn't exist in the System";
+    private static final String USER_WITH_THESE_EMAILID = "User with these emailId";
+    private static final String DOES_NOT_EXIST_IN_SYSTEM = "does not exist in the system";
 
     private UserRepoSitory userRepoSitory;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
@@ -39,14 +43,13 @@ public class UserService {
      * @param email
      * @param password
      * @return
-     * @throws TokenGenerationException
      * @throws PasswordNotMatchingException
      * @throws UserNotFoundException
      */
-    public Tokens login(String email, String password) throws UserNotFoundException, PasswordNotMatchingException, TokenGenerationException {
+    public Tokens login(String email, String password) throws UserNotFoundException, PasswordNotMatchingException {
         Optional<User> users = userRepoSitory.findByEmail(email);
         if (users.isEmpty()) {
-            throw new UserNotFoundException("User with these emailId " + email + " does not exist in the system");
+            throw new UserNotFoundException(USER_WITH_THESE_EMAILID + email + DOES_NOT_EXIST_IN_SYSTEM);
         }
         User user = users.get();
         if (bCryptPasswordEncoder.matches(password, user.getPassword())) {
@@ -54,7 +57,7 @@ public class UserService {
             tokenRepository.save(token);
             return token;
         } else {
-            throw new PasswordNotMatchingException("Password not matching with the system stored password");
+            throw new PasswordNotMatchingException(PASSWORD_NOT_MATCHING_EXCEPTION);
         }
     }
 
@@ -113,7 +116,7 @@ public class UserService {
         // Get the Token from database and check whether it's a valid token or not
         Optional<Tokens> opttokens = tokenRepository.findByValueAndExpiryAtGreaterThanAndInactive(token, new Date(), false);
         if (opttokens.isEmpty()) {
-            throw new InvalidTokenException("Token doesn't exist in the System");
+            throw new InvalidTokenException(INVALID_TOKEN_EXCEPTION);
         }
         return opttokens.get();
 
@@ -125,15 +128,10 @@ public class UserService {
      * @param user
      * @return
      */
-    private Tokens createToken(User user) throws TokenGenerationException {
+    private Tokens createToken(User user) {
         Tokens token = new Tokens();
         token.setUser(user);
-        String generatedToken = null;
-        try {
-            generatedToken = RandomStringGenerator.generateRandomString();
-        } catch (Exception e) {
-            throw new TokenGenerationException("Having Issue in Generating the Token");
-        }
+        String generatedToken = RandomStringGenerator.generateRandomString();
         token.setValue(generatedToken);
         setExpiryDateOfToken(token);
         return token;
