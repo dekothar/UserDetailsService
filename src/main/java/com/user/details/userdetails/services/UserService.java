@@ -91,6 +91,8 @@ public class UserService {
         Tokens tokens = getTokens(token);
         tokens.setInactive(true);
         tokenRepository.save(tokens);
+        tokens.getUser().setInactive(true);
+        userRepoSitory.save(tokens.getUser());
     }
 
     /**
