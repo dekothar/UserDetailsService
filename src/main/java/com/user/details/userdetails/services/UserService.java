@@ -111,7 +111,7 @@ public class UserService {
      */
     private Tokens getTokens(String token) throws InvalidTokenException {
         // Get the Token from database and check whether it's a valid token or not
-        Optional<Tokens> opttokens = tokenRepository.findByValueAndAndExpiryAtGreaterThanAnAndInactive(token, new Date(), false);
+        Optional<Tokens> opttokens = tokenRepository.findByValueAndExpiryAtGreaterThanAndInactive(token, new Date(), false);
         if (opttokens.isEmpty()) {
             throw new InvalidTokenException("Token doesn't exist in the System");
         }

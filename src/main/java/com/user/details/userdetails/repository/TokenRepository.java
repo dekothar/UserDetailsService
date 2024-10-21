@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface TokenRepository extends JpaRepository<Tokens, Long> {
 
-    Optional<Tokens> findByValueAndAndExpiryAtGreaterThanAnAndInactive(String value, Date currdate, boolean active);
+    Optional<Tokens> findByValueAndExpiryAtGreaterThanAndInactive(String value, Date currdate, boolean inactive);
 }
