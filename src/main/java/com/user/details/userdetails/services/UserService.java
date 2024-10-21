@@ -8,10 +8,10 @@ import com.user.details.userdetails.models.Tokens;
 import com.user.details.userdetails.models.User;
 import com.user.details.userdetails.repository.TokenRepository;
 import com.user.details.userdetails.repository.UserRepoSitory;
+import com.user.details.userdetails.utils.RandomStringGenerator;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Date;
@@ -130,7 +130,7 @@ public class UserService {
         token.setUser(user);
         String generatedToken = null;
         try {
-            generatedToken = SecureRandom.getInstanceStrong().toString();
+            generatedToken = RandomStringGenerator.generateRandomString();
         } catch (Exception e) {
             throw new TokenGenerationException("Having Issue in Generating the Token");
         }
