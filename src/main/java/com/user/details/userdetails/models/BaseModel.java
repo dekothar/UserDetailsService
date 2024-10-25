@@ -10,10 +10,14 @@ import lombok.Setter;
 @Getter
 @Setter
 @MappedSuperclass
-public class BaseModel {
+public abstract class BaseModel {
 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
     private boolean inactive;
+
+    private BaseModel(){
+
+    }
 }
