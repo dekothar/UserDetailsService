@@ -17,7 +17,4 @@ public abstract class BaseModel {
     private long id;
     private boolean inactive;
 
-    private BaseModel(){
-
-    }
 }
