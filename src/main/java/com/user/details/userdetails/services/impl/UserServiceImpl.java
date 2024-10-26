@@ -1,5 +1,8 @@
 package com.user.details.userdetails.services.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.user.details.userdetails.dtos.SendEmail;
 import com.user.details.userdetails.exceptions.InvalidTokenException;
 import com.user.details.userdetails.exceptions.PasswordNotMatchingException;
 import com.user.details.userdetails.exceptions.UserNotFoundException;
@@ -9,6 +12,7 @@ import com.user.details.userdetails.repository.TokenRepository;
 import com.user.details.userdetails.repository.UserRepoSitory;
 import com.user.details.userdetails.services.UserService;
 import com.user.details.userdetails.utils.RandomStringGenerator;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -28,11 +32,15 @@ public class UserServiceImpl implements UserService {
     private UserRepoSitory userRepoSitory;
     private BCryptPasswordEncoder bCryptPasswordEncoder;
     private TokenRepository tokenRepository;
+    private KafkaTemplate<String,String> kafkaTemplate;
+    private ObjectMapper objectMapper;
 
-    public UserServiceImpl(UserRepoSitory userRepoSitory, BCryptPasswordEncoder bCryptPasswordEncoder, TokenRepository tokenRepository) {
+    public UserServiceImpl(UserRepoSitory userRepoSitory, BCryptPasswordEncoder bCryptPasswordEncoder, TokenRepository tokenRepository,KafkaTemplate<String, String> kafkaTemplate,ObjectMapper objectMapper) {
         this.userRepoSitory = userRepoSitory;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.tokenRepository = tokenRepository;
+        this.kafkaTemplate = kafkaTemplate;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -78,9 +86,30 @@ public class UserServiceImpl implements UserService {
         user.setName(name);
         // encrypt the pasword coming from user and stores the encrypted password into db.
         user.setPassword(bCryptPasswordEncoder.encode(password));
+
+        SendEmail sendEmail=sendEmailToUser(name, email);
+        // publish or send email to User who is registering into System
+        try {
+            kafkaTemplate.send("SendingEmail" , objectMapper.writeValueAsString(sendEmail));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         // save user details in the db
         userRepoSitory.save(user);
         return user;
+    }
+
+    /**
+     * This method is Used to Send Email to Users.
+     * @param name
+     * @param email
+     */
+    private static SendEmail sendEmailToUser(String name, String email) {
+        SendEmail sendEmail=new SendEmail();
+        sendEmail.setTo(email);
+        sendEmail.setSubject("Sending Email to User");
+        sendEmail.setBody("Welcome" + name + "for registering on Our platform");
+        return sendEmail;
     }
 
     /**
