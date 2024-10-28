@@ -71,4 +71,14 @@ public class UserController {
         }
         return userDto;
     }
+
+    // 5. Sample Api which will be called from ProductSService
+    // to evenly distribute the api requests on different server port registered with Service Discovery
+    // instead of hardcoding the port
+    // it will be taken care by load balancer by using annotation loadbalanced
+    @GetMapping("/details/{id}")
+    public UserDto details(@PathVariable Long id) {
+        System.out.println("getting user details here" + id);
+        return new UserDto();
+    }
 }
